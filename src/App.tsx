@@ -1,7 +1,13 @@
+import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import "./App.css";
+import "reactflow/dist/style.css";
 
-function App() {
-  return <>hi</>;
+export default function App() {
+  return (
+    <ReactFlow fitView>
+      <Controls />
+      <MiniMap />
+      <Background />
+    </ReactFlow>
+  );
 }
-
-export default App;
