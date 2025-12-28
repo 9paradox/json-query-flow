@@ -7,6 +7,9 @@ import { shallow } from "zustand/shallow";
 import { useStore } from "./store";
 import QueryNode from "./components/QueryNode";
 import JsonDataNode from "./components/JsonDataNode";
+import { Sparkles } from "lucide-react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { TypographyH4 } from "./components/ui/h4";
 
 const nodeTypes = {
   mainDataNode: MainDataNode,
@@ -86,8 +89,17 @@ export default function App() {
       <Controls />
       <MiniMap />
       <Background />
-      <Panel position="top-right">
-        <Button> Add </Button>
+
+      <Panel position="top-left">
+        <TypographyH4> Json Query Flow </TypographyH4>
+      </Panel>
+      <Panel position="top-right" className="flex items-center gap-2">
+        <Button variant="outline" size="sm">
+          <Sparkles className="mr-2" /> Connect with AI
+        </Button>
+        <Button variant="ghost" size="icon" aria-label="Submit">
+          <GitHubLogoIcon />
+        </Button>
       </Panel>
     </ReactFlow>
   );

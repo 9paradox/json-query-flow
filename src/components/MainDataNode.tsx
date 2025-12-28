@@ -17,7 +17,7 @@ export default function MainDataNode({ id }: NodeProps) {
   return (
     <Card>
       <CardHeader className="flex items-center justify-between">
-        <CardTitle>Data</CardTitle>
+        <CardTitle>Main Data</CardTitle>
       </CardHeader>
       <CardContent className="nodrag">
         <div

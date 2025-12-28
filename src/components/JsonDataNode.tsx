@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Editor } from "@monaco-editor/react";
 import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
-import { TrashIcon } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState } from "react";
+import { TrashIcon } from "lucide-react";
 
 export default function JsonDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));

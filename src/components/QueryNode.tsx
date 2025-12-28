@@ -10,10 +10,18 @@ import { Editor } from "@monaco-editor/react";
 import jsonataMode from "@/editor/jsonataMode";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store";
-import { TrashIcon } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { TrashIcon } from "lucide-react";
 
 export default function QueryNode({ id }: NodeProps) {
+  const [queryMode, setQueryMode] = useState<string>("jsonata");
   const [title, setTitle] = useState<string>("Query");
   const [prevTitle, setPrevTitle] = useState<string>("Query");
   const [editing, setEditing] = useState<boolean>(false);
@@ -86,7 +94,7 @@ export default function QueryNode({ id }: NodeProps) {
           <Editor
             height="100%"
             width="100%"
-            language="jsonata"
+            language={queryMode === "jsonata" ? "jsonata" : "plaintext"}
             beforeMount={(monaco) => jsonataMode(monaco)}
             theme="jsonataTheme"
             value={queryValue}
@@ -96,7 +104,16 @@ export default function QueryNode({ id }: NodeProps) {
           />
         </div>
       </CardContent>
-      <CardFooter className="p-0 px-4 pb-4 pt-0 justify-end">
+      <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
+        <Select value={queryMode} onValueChange={setQueryMode}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Theme" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="jsonata">JSONata Query</SelectItem>
+            <SelectItem value="natural-language">Natural Language</SelectItem>
+          </SelectContent>
+        </Select>
         <Button size="sm" onClick={() => useStore.getState().runQueryNode(id)}>
           Run
         </Button>
