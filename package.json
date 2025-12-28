@@ -4,19 +4,18 @@
   "version": "0.0.0",
   "description": "Visual JSON flow builder with JSONata queries and React Flow",
   "author": {
-    "name": "Your Name",
-    "email": "you@example.com",
-    "url": "https://example.com"
+    "name": "Akshay Gaonkar (9paradox)",
+    "url": "https://9paradox.com"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/json-flow.git"
+    "url": "git+https://github.com/9paradox/json-flow.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/json-flow/issues"
+    "url": "https://github.com/9paradox/json-flow/issues"
   },
-  "homepage": "https://github.com/your-org/json-flow#readme",
+  "homepage": "https://github.com/9paradox/json-flow#readme",
   "type": "module",
   "scripts": {
     "dev": "vite",
