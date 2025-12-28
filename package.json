@@ -2,6 +2,21 @@
   "name": "json-flow",
   "private": true,
   "version": "0.0.0",
+  "description": "Visual JSON flow builder with JSONata queries and React Flow",
+  "author": {
+    "name": "Your Name",
+    "email": "you@example.com",
+    "url": "https://example.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/json-flow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/json-flow/issues"
+  },
+  "homepage": "https://github.com/your-org/json-flow#readme",
   "type": "module",
   "scripts": {
     "dev": "vite",
