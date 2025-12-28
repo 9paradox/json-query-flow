@@ -1,5 +1,5 @@
 {
-  "name": "json-flow",
+  "name": "json-query-flow",
   "private": true,
   "version": "0.0.0",
   "description": "Visual JSON flow builder with JSONata queries and React Flow",
@@ -10,12 +10,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/9paradox/json-flow.git"
+    "url": "git+https://github.com/9paradox/json-query-flow.git"
   },
   "bugs": {
-    "url": "https://github.com/9paradox/json-flow/issues"
+    "url": "https://github.com/9paradox/json-query-flow/issues"
   },
-  "homepage": "https://github.com/9paradox/json-flow#readme",
+  "homepage": "https://github.com/9paradox/json-query-flow#readme",
   "type": "module",
   "scripts": {
     "dev": "vite",
