@@ -97,8 +97,14 @@ export default function App() {
         <Button variant="outline" size="sm">
           <Sparkles className="mr-2" /> Connect with AI
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Submit">
-          <GitHubLogoIcon />
+        <Button variant="ghost" size="icon" aria-label="Submit" asChild>
+          <a
+            href="https://github.com/9paradox/json-query-flow"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <GitHubLogoIcon />
+          </a>
         </Button>
       </Panel>
     </ReactFlow>
