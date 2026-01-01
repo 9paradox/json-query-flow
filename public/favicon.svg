@@ -1,0 +1,22 @@
+<!-- public/favicon.svg -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+  fill="none"
+>
+  <!-- background -->
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="black" />
+
+  <!-- nodes -->
+  <circle cx="22" cy="22" r="5" fill="white" />
+  <circle cx="42" cy="22" r="5" fill="white" />
+  <circle cx="32" cy="40" r="5" fill="white" />
+
+  <!-- connections -->
+  <path
+    d="M26 24 L38 24 M24 26 L30 36 M40 26 L34 36"
+    stroke="white"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+</svg>
