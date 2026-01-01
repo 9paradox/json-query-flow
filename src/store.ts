@@ -11,14 +11,12 @@ import { nanoid } from "nanoid";
 import { create } from "zustand";
 import jsonata from "jsonata";
 
-// Connection rules (by type)
 const ALLOW_OUT: Record<string, string[]> = {
   mainDataNode: ["queryNode"],
   jsonDataNode: ["queryNode"],
   queryNode: ["jsonDataNode"],
 };
 
-// Derived incoming rules (not currently used for validation, but useful to keep explicit)
 // const ALLOW_IN: Record<string, string[]> = Object.entries(ALLOW_OUT).reduce(
 //   (acc, [src, targets]) => {
 //     for (const tgt of targets) {
@@ -29,7 +27,6 @@ const ALLOW_OUT: Record<string, string[]> = {
 //   {} as Record<string, string[]>
 // );
 
-// Handle restrictions
 const ALLOWED_SOURCE_HANDLES: Record<string, string[]> = {
   mainDataNode: ["data-node-handle"],
   jsonDataNode: ["json-data-node-handle"],
@@ -40,7 +37,6 @@ const REQUIRED_TARGET_HANDLE: Record<string, string> = {
   jsonDataNode: "json-data-node-target",
 };
 
-// Store interface
 interface StoreState {
   nodes: Node[];
   edges: Edge[];
@@ -62,7 +58,6 @@ interface StoreState {
 }
 
 export const useStore = create<StoreState>((set, get) => {
-  // ---------- Helpers ----------
   const findNode = (id?: string | null) =>
     get().nodes.find((n) => n.id === String(id));
 
@@ -73,13 +68,13 @@ export const useStore = create<StoreState>((set, get) => {
   };
 
   const sourceHandleAllowed = (node?: Node, sourceHandle?: string | null) => {
-    if (!node || !sourceHandle) return true; // if unspecified, don't block
+    if (!node || !sourceHandle) return true;
     const allowed = ALLOWED_SOURCE_HANDLES[String(node.type)] || [];
     return allowed.includes(String(sourceHandle));
   };
 
   const targetHandleAllowed = (node?: Node, targetHandle?: string | null) => {
-    if (!node || !targetHandle) return true; // if unspecified, don't block
+    if (!node || !targetHandle) return true;
     const required = REQUIRED_TARGET_HANDLE[String(node.type)];
     return required ? required === String(targetHandle) : true;
   };
@@ -98,31 +93,35 @@ export const useStore = create<StoreState>((set, get) => {
   const createQueryNodeAt = (pos: { x: number; y: number }): Node => ({
     id: `query-${nanoid(6)}`,
     type: "queryNode",
-    data: { label: "New Query Node" },
+    data: { label: "New Query Node", query: "$" },
     position: pos,
   });
 
   const createJsonDataNodeAt = (pos: { x: number; y: number }): Node => ({
     id: `json-data-${nanoid(6)}`,
     type: "jsonDataNode",
-    data: { label: "New Data Node" },
+    data: { label: "New Data Node", value: {} },
     position: pos,
   });
 
   const addEdgeSafe = (edges: Edge[], edge: Edge) => {
-    // prevent duplicates by id
     if (edges.some((e) => e.id === edge.id)) return edges;
     return [...edges, edge];
   };
 
-  // ---------- Store object ----------
   return {
     nodes: [
       {
         id: "mainDataNode",
         type: "mainDataNode",
-        data: { label: "oscillator" },
-        position: { x: 0, y: 0 },
+        data: {
+          label: "Main Data",
+          value: {
+            example: "Hi! welcome to Json Query Flow",
+            action: "Drag the edge to start writing queries",
+          },
+        },
+        position: { x: 0, y: 0},
       },
     ],
     edges: [],
@@ -172,7 +171,6 @@ export const useStore = create<StoreState>((set, get) => {
         ? findNode(String(data.target))
         : undefined;
 
-      // Direct connection between two existing nodes
       if (sourceNode && targetNode) {
         if (
           canConnect(sourceNode, targetNode) &&
@@ -185,7 +183,6 @@ export const useStore = create<StoreState>((set, get) => {
         return;
       }
 
-      // Auto-create path: source main/json -> create query node
       if (
         sourceNode &&
         (sourceNode.type === "mainDataNode" ||
@@ -208,7 +205,6 @@ export const useStore = create<StoreState>((set, get) => {
 
         edges = addEdgeSafe(edges, e1);
 
-        // Optional second edge if a target exists and allowed
         if (targetNode && canConnect(newNode, targetNode)) {
           const e2: Edge = {
             id: `e-${nanoid(6)}`,
@@ -222,7 +218,6 @@ export const useStore = create<StoreState>((set, get) => {
         return;
       }
 
-      // Auto-create path: source query -> create json data node
       if (sourceNode && sourceNode.type === "queryNode") {
         const pos = computeNewPos(sourceNode, (data as any).position);
         const newNode = createJsonDataNodeAt(pos);
@@ -241,7 +236,6 @@ export const useStore = create<StoreState>((set, get) => {
 
         edges = addEdgeSafe(edges, e1);
 
-        // Optional second edge if a target exists and allowed
         if (targetNode && canConnect(newNode, targetNode)) {
           const e2: Edge = {
             id: `e-${nanoid(6)}`,
@@ -278,13 +272,11 @@ export const useStore = create<StoreState>((set, get) => {
       const queryNode = findNode(nodeId);
       if (!queryNode || queryNode.type !== "queryNode") return;
 
-      // Downstream targets (jsonDataNodes)
       let targets = edges
         .filter((e) => e.source === nodeId)
         .map((e) => findNode(e.target))
         .filter((n): n is Node => !!n && n.type === "jsonDataNode");
 
-      // Create one if none
       if (targets.length === 0) {
         const newNode = createJsonDataNodeAt(computeNewPos(queryNode));
         const e: Edge = {
@@ -297,7 +289,6 @@ export const useStore = create<StoreState>((set, get) => {
         targets = [newNode];
       }
 
-      // Upstream source input (mainDataNode or jsonDataNode)
       const upstream = edges
         .filter((e) => e.target === nodeId)
         .map((e) => findNode(e.source))

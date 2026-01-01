@@ -21,7 +21,7 @@ export default function MainDataNode({ id }: NodeProps) {
       </CardHeader>
       <CardContent className="nodrag">
         <div
-          style={{ width: 360, height: 220, resize: "both", overflow: "auto" }}
+          style={{ width: 550, height: 220, resize: "both", overflow: "auto" }}
         >
           <Editor
             height="100%"
