@@ -20,7 +20,7 @@ interface PieChartViewProps {
 
 export function PieChartView({
   data,
-  aggregation = "percentage", // ✅ pie default
+  aggregation = "percentage",
 }: PieChartViewProps) {
   const chartData = aggregateChartData(data, aggregation);
 

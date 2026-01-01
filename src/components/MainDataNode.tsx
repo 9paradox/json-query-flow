@@ -9,7 +9,7 @@ export default function MainDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
   const editorRef = useRef(null);
   const [, setIsFocused] = useState(true);
-  const value = node?.data?.value ?? {};
+  const value = node?.data?.jsonData ?? {};
   const pretty = (() => {
     try {
       return JSON.stringify(value, null, 2);
@@ -27,7 +27,7 @@ export default function MainDataNode({ id }: NodeProps) {
       let schema = null;
       try {
         const inputValue = useStore.getState().nodes.find((n) => n.id === id)
-          ?.data?.value;
+          ?.data?.jsonData;
         schema = jsonToSchemaLite(inputValue ?? {});
       } catch {
         schema = null;

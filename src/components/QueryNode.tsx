@@ -27,7 +27,7 @@ export default function QueryNode({ id }: NodeProps) {
   const [editing, setEditing] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
-  const queryValue = (node?.data as any)?.query ?? "";
+  const queryValue = node?.data || { jsonQuery: "", nlQuery: "" };
 
   useEffect(() => {
     if (editing) {
@@ -46,6 +46,21 @@ export default function QueryNode({ id }: NodeProps) {
   function cancel() {
     setTitle(prevTitle);
     setEditing(false);
+  }
+
+  function onChange(val) {
+    const queryData = {
+      jsonQuery: queryValue.jsonQuery,
+      nlQuery: queryValue.nlQuery,
+    };
+    if (queryMode === "jsonata") {
+      queryData.jsonQuery = val;
+    } else {
+      queryData.nlQuery = val;
+    }
+    return useStore.getState().updateNodeData(id, {
+      ...queryData,
+    });
   }
 
   return (
@@ -97,10 +112,12 @@ export default function QueryNode({ id }: NodeProps) {
             language={queryMode === "jsonata" ? "jsonata" : "plaintext"}
             beforeMount={(monaco) => jsonataMode(monaco)}
             theme="jsonataTheme"
-            value={queryValue}
-            onChange={(val) =>
-              useStore.getState().updateNodeData(id, { query: val ?? "" })
+            value={
+              queryMode === "jsonata"
+                ? queryValue.jsonQuery
+                : queryValue.nlQuery
             }
+            onChange={onChange}
             options={{ minimap: { enabled: false } }}
           />
         </div>

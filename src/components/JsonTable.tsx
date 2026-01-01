@@ -9,13 +9,19 @@ import {
 
 type JsonRecord = Record<string, any>;
 
+function isJsonRecordArray(value: unknown): value is JsonRecord[] {
+  return (
+    Array.isArray(value) && value.length > 0 && typeof value[0] === "object"
+  );
+}
+
 interface JsonTableProps {
-  data: JsonRecord[];
+  data: JsonRecord[] | unknown;
   maxRows?: number;
 }
 
 export default function JsonTable({ data, maxRows = 100 }: JsonTableProps) {
-  if (!data || !data.length || data.length === 0 || typeof data !== "object") {
+  if (!isJsonRecordArray(data)) {
     return (
       <div className="text-sm text-muted-foreground">No data available</div>
     );

@@ -43,12 +43,12 @@ export default function JsonDataNode({ id }: NodeProps) {
   const editorRef = useRef(null);
   const [, setIsFocused] = useState(true);
   const [title, setTitle] = useState<string>(
-    String(node?.data?.label ?? "Output Data")
+    String(node?.data?.nodeLabel ?? "Output Data")
   );
   const [prevTitle, setPrevTitle] = useState<string>(title);
   const [editing, setEditing] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const value = node?.data?.value ?? {};
+  const value = node?.data?.jsonData ?? {};
   const pretty = (() => {
     try {
       return JSON.stringify(value, null, 2);
@@ -66,7 +66,7 @@ export default function JsonDataNode({ id }: NodeProps) {
       let schema = null;
       try {
         const inputValue = useStore.getState().nodes.find((n) => n.id === id)
-          ?.data?.value;
+          ?.data?.jsonData;
         schema = jsonToSchemaLite(inputValue ?? {});
       } catch {
         schema = null;
@@ -102,7 +102,9 @@ export default function JsonDataNode({ id }: NodeProps) {
   }
 
   async function handleVisualModeChange() {
-    const analysis = await analyzeJsonForVisualization(node?.data?.value ?? {});
+    const analysis = await analyzeJsonForVisualization(
+      node?.data?.jsonData ?? {}
+    );
     console.log("Analysis result:", analysis);
     setAnalyzerResult(analysis);
     setVisualModeEnabled(analysis.success);

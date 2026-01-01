@@ -38,8 +38,16 @@ const REQUIRED_TARGET_HANDLE: Record<string, string> = {
   jsonDataNode: "json-data-node-target",
 };
 
+export interface FlowNode {
+  jsonData: unknown | null;
+  nodeLabel: string;
+  jsonSchema: unknown | null;
+  jsonQuery: string;
+  nlQuery: string;
+}
+
 interface StoreState {
-  nodes: Node[];
+  nodes: Node<FlowNode>[];
   edges: Edge[];
   connectStart: { nodeId: string | null; handleId?: string | null } | null;
 
@@ -62,26 +70,32 @@ export const useStore = create<StoreState>((set, get) => {
   const findNode = (id?: string | null) =>
     get().nodes.find((n) => n.id === String(id));
 
-  const canConnect = (source?: Node, target?: Node) => {
+  const canConnect = (source?: Node<FlowNode>, target?: Node<FlowNode>) => {
     if (!source || !target) return false;
     const allowed = ALLOW_OUT[String(source.type)] || [];
     return allowed.includes(String(target.type));
   };
 
-  const sourceHandleAllowed = (node?: Node, sourceHandle?: string | null) => {
+  const sourceHandleAllowed = (
+    node?: Node<FlowNode>,
+    sourceHandle?: string | null
+  ) => {
     if (!node || !sourceHandle) return true;
     const allowed = ALLOWED_SOURCE_HANDLES[String(node.type)] || [];
     return allowed.includes(String(sourceHandle));
   };
 
-  const targetHandleAllowed = (node?: Node, targetHandle?: string | null) => {
+  const targetHandleAllowed = (
+    node?: Node<FlowNode>,
+    targetHandle?: string | null
+  ) => {
     if (!node || !targetHandle) return true;
     const required = REQUIRED_TARGET_HANDLE[String(node.type)];
     return required ? required === String(targetHandle) : true;
   };
 
   const computeNewPos = (
-    source: Node | undefined,
+    source: Node<FlowNode> | undefined,
     fallback?: { x: number; y: number }
   ) => {
     const sourcePos: any = (source && (source.position as any)) || {
@@ -96,17 +110,35 @@ export const useStore = create<StoreState>((set, get) => {
     );
   };
 
-  const createQueryNodeAt = (pos: { x: number; y: number }): Node => ({
+  const createQueryNodeAt = (pos: {
+    x: number;
+    y: number;
+  }): Node<FlowNode> => ({
     id: `query-${nanoid(6)}`,
     type: "queryNode",
-    data: { label: "New Query Node", query: "$" },
+    data: {
+      jsonData: {},
+      nodeLabel: "New Query Node",
+      jsonSchema: null,
+      jsonQuery: "$",
+      nlQuery: "",
+    },
     position: pos,
   });
 
-  const createJsonDataNodeAt = (pos: { x: number; y: number }): Node => ({
+  const createJsonDataNodeAt = (pos: {
+    x: number;
+    y: number;
+  }): Node<FlowNode> => ({
     id: `json-data-${nanoid(6)}`,
     type: "jsonDataNode",
-    data: { label: "New Data Node", value: {} },
+    data: {
+      jsonData: {},
+      nodeLabel: "New Data Node",
+      jsonSchema: null,
+      jsonQuery: "$",
+      nlQuery: "",
+    },
     position: pos,
   });
 
@@ -121,12 +153,14 @@ export const useStore = create<StoreState>((set, get) => {
         id: "mainDataNode",
         type: "mainDataNode",
         data: {
-          label: "Main Data",
-          value: {
+          jsonData: {
             example: "Hi! welcome to Json Query Flow",
             action: "Drag the edge to start writing queries",
           },
-          schema: null,
+          nodeLabel: "Main Data",
+          jsonSchema: null,
+          jsonQuery: "$",
+          nlQuery: "",
         },
         position: { x: 0, y: 0 },
       },
@@ -181,8 +215,8 @@ export const useStore = create<StoreState>((set, get) => {
       if (sourceNode && targetNode) {
         if (
           canConnect(sourceNode, targetNode) &&
-          sourceHandleAllowed(sourceNode, data.sourceHandle as any) &&
-          targetHandleAllowed(targetNode, data.targetHandle as any)
+          sourceHandleAllowed(sourceNode, data.sourceHandle) &&
+          targetHandleAllowed(targetNode, data.targetHandle)
         ) {
           const id = nanoid(6);
           set({ edges: [...edges, { ...data, id }] });
@@ -195,7 +229,7 @@ export const useStore = create<StoreState>((set, get) => {
         (sourceNode.type === "mainDataNode" ||
           sourceNode.type === "jsonDataNode")
       ) {
-        const pos = computeNewPos(sourceNode, (data as any).position);
+        const pos = computeNewPos(sourceNode, data.position);
         const newNode = createQueryNodeAt(pos);
         const newNodes = [...nodes, newNode];
 
@@ -226,7 +260,7 @@ export const useStore = create<StoreState>((set, get) => {
       }
 
       if (sourceNode && sourceNode.type === "queryNode") {
-        const pos = computeNewPos(sourceNode, (data as any).position);
+        const pos = computeNewPos(sourceNode, data.position);
         const newNode = createJsonDataNodeAt(pos);
         const newNodes = [...nodes, newNode];
 
@@ -282,7 +316,7 @@ export const useStore = create<StoreState>((set, get) => {
       let targets = edges
         .filter((e) => e.source === nodeId)
         .map((e) => findNode(e.target))
-        .filter((n): n is Node => !!n && n.type === "jsonDataNode");
+        .filter((n): n is Node<FlowNode> => !!n && n.type === "jsonDataNode");
 
       if (targets.length === 0) {
         const newNode = createJsonDataNodeAt(computeNewPos(queryNode));
@@ -303,13 +337,12 @@ export const useStore = create<StoreState>((set, get) => {
           (n) => n && (n.type === "mainDataNode" || n.type === "jsonDataNode")
         );
 
-      const inputData =
-        (upstream as any)?.data?.value ?? (upstream as any)?.data ?? {};
-      const queryStr = (queryNode.data as any)?.query || "$";
+      const inputData = upstream?.data?.jsonData ?? {};
+      const queryStr = queryNode.data?.jsonQuery || "$";
 
       let result: any;
       try {
-        let schema = upstream ? (upstream as any)?.data?.schema || null : null;
+        let schema = upstream ? upstream?.data?.jsonSchema || null : null;
 
         if (schema === null && inputData) {
           try {
@@ -319,8 +352,6 @@ export const useStore = create<StoreState>((set, get) => {
             console.log("Failed to compute schema");
           }
         }
-
-        console.log("Using schema:", schema); // --- IGNORE ---
         result = await jsonata(queryStr).evaluate(inputData);
       } catch (err: any) {
         result = { error: String(err?.message || err) };
@@ -329,10 +360,16 @@ export const useStore = create<StoreState>((set, get) => {
       const targetIds = new Set(targets.map((t) => t.id));
       const updatedNodes = nodes.map((n) =>
         targetIds.has(n.id)
-          ? {
+          ? ({
               ...n,
-              data: { ...(n.data || {}), value: result, label: "Result" },
-            }
+              data: {
+                ...(n.data || {}),
+                jsonData: result,
+                jsonSchema: n.data?.jsonSchema,
+              },
+
+              //data: { ...(n.data || {}), value: result, label: "Result" },
+            } as Node<FlowNode>)
           : n
       );
 
