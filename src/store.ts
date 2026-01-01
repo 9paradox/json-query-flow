@@ -10,6 +10,7 @@ import {
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 import jsonata from "jsonata";
+import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 
 const ALLOW_OUT: Record<string, string[]> = {
   mainDataNode: ["queryNode"],
@@ -120,8 +121,9 @@ export const useStore = create<StoreState>((set, get) => {
             example: "Hi! welcome to Json Query Flow",
             action: "Drag the edge to start writing queries",
           },
+          schema: null,
         },
-        position: { x: 0, y: 0},
+        position: { x: 0, y: 0 },
       },
     ],
     edges: [],
@@ -302,6 +304,18 @@ export const useStore = create<StoreState>((set, get) => {
 
       let result: any;
       try {
+        let schema = upstream ? (upstream as any)?.data?.schema || null : null;
+
+        if (schema === null && inputData) {
+          try {
+            schema = jsonToSchemaLite(inputData);
+          } catch {
+            schema = null;
+            console.log("Failed to compute schema");
+          }
+        }
+
+        console.log("Using schema:", schema); // --- IGNORE ---
         result = await jsonata(queryStr).evaluate(inputData);
       } catch (err: any) {
         result = { error: String(err?.message || err) };

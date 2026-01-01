@@ -5,9 +5,12 @@ import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { TrashIcon } from "lucide-react";
+import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 
 export default function JsonDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
+  const editorRef = useRef(null);
+  const [isFocused, setIsFocused] = useState(true);
   const value = node?.data?.value ?? {};
   const pretty = (() => {
     try {
@@ -16,6 +19,29 @@ export default function JsonDataNode({ id }: NodeProps) {
       return "{}";
     }
   })();
+
+  function handleEditorDidMount(editor, monaco) {
+    editorRef.current = editor;
+
+    editor.onDidBlurEditorWidget(async () => {
+      console.log("blurred");
+      setIsFocused(false);
+      let schema = null;
+      try {
+        const inputValue = useStore.getState().nodes.find((n) => n.id === id)
+          ?.data?.value;
+        schema = jsonToSchemaLite(inputValue ?? {});
+      } catch {
+        schema = null;
+      }
+      useStore.getState().updateNodeData(id, { schema });
+    });
+
+    editor.onDidFocusEditorWidget(async () => {
+      console.log("focused");
+      setIsFocused(true);
+    });
+  }
 
   const [title, setTitle] = useState<string>(
     String(node?.data?.label ?? "Output Data")
@@ -93,6 +119,7 @@ export default function JsonDataNode({ id }: NodeProps) {
             theme="json"
             value={pretty}
             options={{ readOnly: true }}
+            onMount={handleEditorDidMount}
           />
         </div>
       </CardContent>

@@ -2,9 +2,13 @@ import { Handle, Position, NodeProps } from "reactflow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Editor } from "@monaco-editor/react";
 import { useStore } from "@/store";
+import { useRef, useState } from "react";
+import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 
 export default function MainDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
+  const editorRef = useRef(null);
+  const [isFocused, setIsFocused] = useState(true);
   const value = node?.data?.value ?? {};
   const pretty = (() => {
     try {
@@ -13,6 +17,29 @@ export default function MainDataNode({ id }: NodeProps) {
       return "{}";
     }
   })();
+
+  function handleEditorDidMount(editor, monaco) {
+    editorRef.current = editor;
+
+    editor.onDidBlurEditorWidget(async () => {
+      console.log("blurred");
+      setIsFocused(false);
+      let schema = null;
+      try {
+        const inputValue = useStore.getState().nodes.find((n) => n.id === id)
+          ?.data?.value;
+        schema = jsonToSchemaLite(inputValue ?? {});
+      } catch {
+        schema = null;
+      }
+      useStore.getState().updateNodeData(id, { schema });
+    });
+
+    editor.onDidFocusEditorWidget(async () => {
+      console.log("focused");
+      setIsFocused(true);
+    });
+  }
 
   return (
     <Card>
@@ -37,6 +64,7 @@ export default function MainDataNode({ id }: NodeProps) {
                 // ignore parse errors to allow free typing; only update on valid JSON
               }
             }}
+            onMount={handleEditorDidMount}
           />
         </div>
       </CardContent>
