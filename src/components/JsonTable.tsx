@@ -15,7 +15,7 @@ interface JsonTableProps {
 }
 
 export default function JsonTable({ data, maxRows = 100 }: JsonTableProps) {
-  if (!data || data.length === 0) {
+  if (!data || !data.length || data.length === 0 || typeof data !== "object") {
     return (
       <div className="text-sm text-muted-foreground">No data available</div>
     );
