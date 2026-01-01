@@ -88,7 +88,12 @@ export const useStore = create<StoreState>((set, get) => {
       x: 0,
       y: 0,
     };
-    return fallback ?? { x: sourcePos.x + 200, y: sourcePos.y };
+    return (
+      fallback ?? {
+        x: sourcePos.x + (source.width ?? 400),
+        y: sourcePos.y + (source.height ?? 100),
+      }
+    );
   };
 
   const createQueryNodeAt = (pos: { x: number; y: number }): Node => ({

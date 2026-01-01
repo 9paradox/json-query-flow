@@ -2,14 +2,14 @@ import ReactFlow, { Background, Controls, MiniMap, Panel } from "reactflow";
 import { Button } from "@/components/ui/button";
 import "./App.css";
 import "reactflow/dist/style.css";
-import MainDataNode from "./components/MainDataNode";
+import MainDataNode from "@/components/MainDataNode";
 import { shallow } from "zustand/shallow";
 import { useStore } from "./store";
-import QueryNode from "./components/QueryNode";
-import JsonDataNode from "./components/JsonDataNode";
-import { Sparkles } from "lucide-react";
+import QueryNode from "@/components/QueryNode";
+import JsonDataNode from "@/components/JsonDataNode";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { TypographyH4 } from "./components/ui/h4";
+import { TypographyH4 } from "@/components/ui/h4";
+import { ConnectWithAIPopover } from "@/components/ConnectWithAIPopover";
 
 const nodeTypes = {
   mainDataNode: MainDataNode,
@@ -94,9 +94,7 @@ export default function App() {
         <TypographyH4> Json Query Flow </TypographyH4>
       </Panel>
       <Panel position="top-right" className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
-          <Sparkles className="mr-2" /> Connect with AI
-        </Button>
+        <ConnectWithAIPopover />
         <Button variant="ghost" size="icon" aria-label="Submit" asChild>
           <a
             href="https://github.com/9paradox/json-query-flow"
