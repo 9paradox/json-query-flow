@@ -78,7 +78,7 @@ export default function App() {
       onNodesChange={store.onNodesChange}
       onEdgesChange={store.onEdgesChange}
       onConnect={store.addEdge}
-      onConnectStart={(event, params) => store.onConnectStart(event, params)}
+      onConnectStart={store.onConnectStart}
       onConnectEnd={(event) => {
         const pos = computeFlowPositionFromEvent(event);
         store.onConnectEnd(event, pos);
@@ -91,10 +91,12 @@ export default function App() {
       <Background />
 
       <Panel position="top-left">
-        <TypographyH4> Json Query Flow </TypographyH4>
+        <TypographyH4>Json Query Flow</TypographyH4>
       </Panel>
+
       <Panel position="top-right" className="flex items-center gap-2">
         <ConnectWithAIPopover />
+
         <Button
           variant="ghost"
           size="icon"
