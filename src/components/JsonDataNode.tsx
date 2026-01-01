@@ -1,14 +1,32 @@
 import { Handle, Position, NodeProps } from "reactflow";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Editor } from "@monaco-editor/react";
 import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { TrashIcon } from "lucide-react";
 import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
+import { analyzeJsonForVisualization } from "@/lib/analyzeJsonForVisualization";
 
 export default function JsonDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
+  const [visualModeEnabled, setVisualModeEnabled] = useState<boolean>(false);
+  const [visualMode, setVisualMode] = useState<string>("json");
+  const [supportedVisual, setSupportedVisual] = useState<string[]>(["json"]);
   const editorRef = useRef(null);
   const [isFocused, setIsFocused] = useState(true);
   const value = node?.data?.value ?? {};
@@ -71,6 +89,17 @@ export default function JsonDataNode({ id }: NodeProps) {
     setEditing(false);
   }
 
+  async function handleVisualModeChange() {
+    const analysis = await analyzeJsonForVisualization(node?.data?.value ?? {});
+    console.log("Analysis result:", analysis);
+    const available: string[] = ["json"];
+    if (analysis.isTable) available.push("table");
+    if (analysis.isBarChart) available.push("bar-chart");
+    if (analysis.isPieChart) available.push("pie-chart");
+    setSupportedVisual(available);
+    setVisualModeEnabled(analysis.success);
+  }
+
   return (
     <Card>
       <CardHeader className="px-4 py-1">
@@ -123,6 +152,29 @@ export default function JsonDataNode({ id }: NodeProps) {
           />
         </div>
       </CardContent>
+      <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
+        {visualModeEnabled && (
+          <Select value={visualMode} onValueChange={setVisualMode}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Visual mode" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="json">json</SelectItem>
+              {supportedVisual.map((mode) => {
+                if (mode === "json") return null;
+                return (
+                  <SelectItem key={mode} value={mode}>
+                    {mode.replace("-", " ")}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        )}
+        <Button size="sm" onClick={handleVisualModeChange}>
+          Visualize
+        </Button>
+      </CardFooter>
       <Handle
         type="source"
         style={{ padding: 4 }}

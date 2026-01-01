@@ -107,7 +107,7 @@ export default function QueryNode({ id }: NodeProps) {
       <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
         <Select value={queryMode} onValueChange={setQueryMode}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Theme" />
+            <SelectValue placeholder="Query type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="jsonata">JSONata Query</SelectItem>
