@@ -101,6 +101,7 @@ export default function QueryNode({ id }: NodeProps) {
             onChange={(val) =>
               useStore.getState().updateNodeData(id, { query: val ?? "" })
             }
+            options={{ minimap: { enabled: false } }}
           />
         </div>
       </CardContent>

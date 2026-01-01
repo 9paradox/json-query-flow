@@ -20,6 +20,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+import JsonTable from "@/components/JsonTable";
+
 import { analyzeJsonForVisualization } from "@/lib/analyzeJsonForVisualization";
 
 export default function JsonDataNode({ id }: NodeProps) {
@@ -28,7 +30,13 @@ export default function JsonDataNode({ id }: NodeProps) {
   const [visualMode, setVisualMode] = useState<string>("json");
   const [supportedVisual, setSupportedVisual] = useState<string[]>(["json"]);
   const editorRef = useRef(null);
-  const [isFocused, setIsFocused] = useState(true);
+  const [, setIsFocused] = useState(true);
+  const [title, setTitle] = useState<string>(
+    String(node?.data?.label ?? "Output Data")
+  );
+  const [prevTitle, setPrevTitle] = useState<string>(title);
+  const [editing, setEditing] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const value = node?.data?.value ?? {};
   const pretty = (() => {
     try {
@@ -38,7 +46,7 @@ export default function JsonDataNode({ id }: NodeProps) {
     }
   })();
 
-  function handleEditorDidMount(editor, monaco) {
+  function handleEditorDidMount(editor, _monaco) {
     editorRef.current = editor;
 
     editor.onDidBlurEditorWidget(async () => {
@@ -60,13 +68,6 @@ export default function JsonDataNode({ id }: NodeProps) {
       setIsFocused(true);
     });
   }
-
-  const [title, setTitle] = useState<string>(
-    String(node?.data?.label ?? "Output Data")
-  );
-  const [prevTitle, setPrevTitle] = useState<string>(title);
-  const [editing, setEditing] = useState<boolean>(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (editing) {
@@ -141,15 +142,18 @@ export default function JsonDataNode({ id }: NodeProps) {
         <div
           style={{ width: 360, height: 220, resize: "both", overflow: "auto" }}
         >
-          <Editor
-            height="100%"
-            width="100%"
-            language="json"
-            theme="json"
-            value={pretty}
-            options={{ readOnly: true }}
-            onMount={handleEditorDidMount}
-          />
+          {visualMode === "json" && (
+            <Editor
+              height="100%"
+              width="100%"
+              language="json"
+              theme="json"
+              value={pretty}
+              options={{ readOnly: true }}
+              onMount={handleEditorDidMount}
+            />
+          )}
+          {visualMode === "table" && <JsonTable data={value} />}
         </div>
       </CardContent>
       <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
@@ -164,7 +168,7 @@ export default function JsonDataNode({ id }: NodeProps) {
                 if (mode === "json") return null;
                 return (
                   <SelectItem key={mode} value={mode}>
-                    {mode.replace("-", " ")}
+                    {mode}
                   </SelectItem>
                 );
               })}
