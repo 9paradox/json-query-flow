@@ -22,13 +22,24 @@ import {
 
 import JsonTable from "@/components/JsonTable";
 
-import { analyzeJsonForVisualization } from "@/lib/analyzeJsonForVisualization";
+import {
+  analyzeJsonForVisualization,
+  AnalyzerResult,
+  Aggregation,
+  AGGREGATION_OPTIONS,
+  getAggregation,
+} from "@/lib/analyzeJsonForVisualization";
+import { BarChartView } from "@/components/BarChartView";
+import { PieChartView } from "@/components/PieChartView";
 
 export default function JsonDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
   const [visualModeEnabled, setVisualModeEnabled] = useState<boolean>(false);
   const [visualMode, setVisualMode] = useState<string>("json");
-  const [supportedVisual, setSupportedVisual] = useState<string[]>(["json"]);
+  const [aggregationType, setAggregationType] = useState<Aggregation>("auto");
+  const [analyzerResult, setAnalyzerResult] = useState<AnalyzerResult | null>(
+    null
+  );
   const editorRef = useRef(null);
   const [, setIsFocused] = useState(true);
   const [title, setTitle] = useState<string>(
@@ -93,11 +104,7 @@ export default function JsonDataNode({ id }: NodeProps) {
   async function handleVisualModeChange() {
     const analysis = await analyzeJsonForVisualization(node?.data?.value ?? {});
     console.log("Analysis result:", analysis);
-    const available: string[] = ["json"];
-    if (analysis.isTable) available.push("table");
-    if (analysis.isBarChart) available.push("bar-chart");
-    if (analysis.isPieChart) available.push("pie-chart");
-    setSupportedVisual(available);
+    setAnalyzerResult(analysis);
     setVisualModeEnabled(analysis.success);
   }
 
@@ -154,6 +161,18 @@ export default function JsonDataNode({ id }: NodeProps) {
             />
           )}
           {visualMode === "table" && <JsonTable data={value} />}
+          {visualMode === "bar" && (
+            <BarChartView
+              data={analyzerResult.chartData?.bar}
+              aggregation={aggregationType}
+            />
+          )}
+          {visualMode === "pie" && (
+            <PieChartView
+              data={analyzerResult.chartData?.pie}
+              aggregation={aggregationType}
+            />
+          )}
         </div>
       </CardContent>
       <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
@@ -164,7 +183,7 @@ export default function JsonDataNode({ id }: NodeProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="json">json</SelectItem>
-              {supportedVisual.map((mode) => {
+              {analyzerResult.availableViews.map((mode) => {
                 if (mode === "json") return null;
                 return (
                   <SelectItem key={mode} value={mode}>
@@ -175,6 +194,27 @@ export default function JsonDataNode({ id }: NodeProps) {
             </SelectContent>
           </Select>
         )}
+        {visualModeEnabled &&
+          (visualMode === "bar" || visualMode === "pie") && (
+            <Select
+              value={aggregationType}
+              onValueChange={(a) => {
+                const aggregationType = getAggregation(a, "auto");
+                setAggregationType(aggregationType);
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Aggregation type" />
+              </SelectTrigger>
+              <SelectContent>
+                {AGGREGATION_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         <Button size="sm" onClick={handleVisualModeChange}>
           Visualize
         </Button>

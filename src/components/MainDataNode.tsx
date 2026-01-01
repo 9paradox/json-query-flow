@@ -8,7 +8,7 @@ import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 export default function MainDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
   const editorRef = useRef(null);
-  const [isFocused, setIsFocused] = useState(true);
+  const [, setIsFocused] = useState(true);
   const value = node?.data?.value ?? {};
   const pretty = (() => {
     try {
@@ -18,7 +18,7 @@ export default function MainDataNode({ id }: NodeProps) {
     }
   })();
 
-  function handleEditorDidMount(editor, monaco) {
+  function handleEditorDidMount(editor, _monaco) {
     editorRef.current = editor;
 
     editor.onDidBlurEditorWidget(async () => {

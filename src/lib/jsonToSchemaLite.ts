@@ -3,6 +3,7 @@ export type SchemaLite =
   | "number"
   | "boolean"
   | "null"
+  | "any"
   | SchemaLite[]
   | { [key: string]: SchemaLite };
 
