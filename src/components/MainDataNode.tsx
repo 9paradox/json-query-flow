@@ -24,15 +24,15 @@ export default function MainDataNode({ id }: NodeProps) {
     editor.onDidBlurEditorWidget(async () => {
       console.log("blurred");
       setIsFocused(false);
-      let schema = null;
+      const value = { jsonSchema: null };
       try {
         const inputValue = useStore.getState().nodes.find((n) => n.id === id)
           ?.data?.jsonData;
-        schema = jsonToSchemaLite(inputValue ?? {});
+        value.jsonSchema = jsonToSchemaLite(inputValue ?? {});
       } catch {
-        schema = null;
+        value.jsonSchema = null;
       }
-      useStore.getState().updateNodeData(id, { schema });
+      useStore.getState().updateNodeData(id, { ...value });
     });
 
     editor.onDidFocusEditorWidget(async () => {
@@ -43,13 +43,12 @@ export default function MainDataNode({ id }: NodeProps) {
 
   return (
     <Card>
-      <CardHeader className="flex items-center justify-between">
-        <CardTitle>Main Data</CardTitle>
+      <CardHeader className="flex items-center justify-between px-4 py-3">
+        <CardTitle className="text-sm font-semibold">Main Data</CardTitle>
       </CardHeader>
-      <CardContent className="nodrag">
-        <div
-          style={{ width: 550, height: 220, resize: "both", overflow: "auto" }}
-        >
+
+      <CardContent className="nodrag px-4 pb-4 pt-0">
+        <div className="w-[550px] h-[220px] resize both overflow-auto rounded-md border">
           <Editor
             height="100%"
             width="100%"
@@ -59,20 +58,21 @@ export default function MainDataNode({ id }: NodeProps) {
             onChange={(text) => {
               try {
                 const parsed = text ? JSON.parse(text) : {};
-                useStore.getState().updateNodeData(id, { value: parsed });
+                useStore.getState().updateNodeData(id, { jsonData: parsed });
               } catch {
-                // ignore parse errors to allow free typing; only update on valid JSON
+                // ignore parse errors
               }
             }}
             onMount={handleEditorDidMount}
           />
         </div>
       </CardContent>
+
       <Handle
         type="source"
-        style={{ padding: 4 }}
         position={Position.Right}
         id="main-data-node-output"
+        style={{ padding: 4 }}
       />
     </Card>
   );

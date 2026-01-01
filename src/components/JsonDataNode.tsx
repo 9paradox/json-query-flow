@@ -10,7 +10,7 @@ import { Editor } from "@monaco-editor/react";
 import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { TrashIcon } from "lucide-react";
+import { RefreshCcw, TrashIcon } from "lucide-react";
 import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 import {
   Select,
@@ -124,7 +124,9 @@ export default function JsonDataNode({ id }: NodeProps) {
                 if (e.key === "Enter") commit();
                 if (e.key === "Escape") cancel();
               }}
-              className="text-base font-semibold bg-transparent border border-input rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className="text-base font-semibold bg-transparent border border-input rounded px-2 py-1
+                     focus:outline-none focus:ring-2 focus:ring-ring
+                     focus:ring-offset-2 focus:ring-offset-background"
             />
           ) : (
             <CardTitle
@@ -135,10 +137,11 @@ export default function JsonDataNode({ id }: NodeProps) {
               {title}
             </CardTitle>
           )}
+
           <Button
             variant="ghost"
             size="icon"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
             aria-label="Delete"
             title="Delete"
             onClick={() => useStore.getState().removeNode(id)}
@@ -147,9 +150,15 @@ export default function JsonDataNode({ id }: NodeProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="nodrag">
+
+      <CardContent className="nodrag px-4 pb-4 pt-0">
         <div
-          style={{ width: 360, height: 220, resize: "both", overflow: "auto" }}
+          role="region"
+          aria-label="Visualization output"
+          tabIndex={0}
+          className="w-[360px] h-[220px] resize both overflow-auto rounded-md border
+                 focus:outline-none focus:ring-2 focus:ring-ring
+                 focus:ring-offset-2 focus:ring-offset-background"
         >
           {visualMode === "json" && (
             <Editor
@@ -158,17 +167,20 @@ export default function JsonDataNode({ id }: NodeProps) {
               language="json"
               theme="json"
               value={pretty}
-              options={{ readOnly: true }}
+              options={{ readOnly: true, accessibilitySupport: "on" }}
               onMount={handleEditorDidMount}
             />
           )}
+
           {visualMode === "table" && <JsonTable data={value} />}
+
           {visualMode === "bar" && (
             <BarChartView
               data={analyzerResult.chartData?.bar}
               aggregation={aggregationType}
             />
           )}
+
           {visualMode === "pie" && (
             <PieChartView
               data={analyzerResult.chartData?.pie}
@@ -177,61 +189,74 @@ export default function JsonDataNode({ id }: NodeProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
-        {visualModeEnabled && (
-          <Select value={visualMode} onValueChange={setVisualMode}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Visual mode" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="json">json</SelectItem>
-              {analyzerResult.availableViews.map((mode) => {
-                if (mode === "json") return null;
-                return (
-                  <SelectItem key={mode} value={mode}>
-                    {mode}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        )}
-        {visualModeEnabled &&
-          (visualMode === "bar" || visualMode === "pie") && (
-            <Select
-              value={aggregationType}
-              onValueChange={(a) => {
-                const aggregationType = getAggregation(a, "auto");
-                setAggregationType(aggregationType);
-              }}
-            >
+
+      <CardFooter className="flex items-center justify-between gap-2 px-4 pb-4 pt-0">
+        <div className="flex items-center gap-2">
+          {visualModeEnabled && (
+            <Select value={visualMode} onValueChange={setVisualMode}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Aggregation type" />
+                <SelectValue placeholder="Visual mode" />
               </SelectTrigger>
               <SelectContent>
-                {AGGREGATION_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="json">json</SelectItem>
+                {analyzerResult.availableViews.map((mode) =>
+                  mode === "json" ? null : (
+                    <SelectItem key={mode} value={mode}>
+                      {mode}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
           )}
-        <Button size="sm" onClick={handleVisualModeChange}>
-          Visualize
+
+          {visualModeEnabled &&
+            (visualMode === "bar" || visualMode === "pie") && (
+              <Select
+                value={aggregationType}
+                onValueChange={(a) => {
+                  const aggregationType = getAggregation(a, "auto");
+                  setAggregationType(aggregationType);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Aggregation type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AGGREGATION_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleVisualModeChange}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium"
+        >
+          {visualModeEnabled && (
+            <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+          )}
+          <span>Visualize</span>
         </Button>
       </CardFooter>
+
       <Handle
         type="source"
-        style={{ padding: 4 }}
         position={Position.Right}
         id="json-data-node-output"
+        style={{ padding: 4 }}
       />
       <Handle
         type="target"
-        style={{ padding: 4 }}
         position={Position.Left}
         id="json-data-node-input"
+        style={{ padding: 4 }}
       />
     </Card>
   );

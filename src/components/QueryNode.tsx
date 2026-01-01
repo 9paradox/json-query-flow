@@ -67,7 +67,6 @@ export default function QueryNode({ id }: NodeProps) {
     <Card>
       <CardHeader className="px-4 py-1">
         <div className="flex items-center justify-between gap-2">
-          {/* Title / Inline edit */}
           {editing ? (
             <input
               ref={inputRef}
@@ -89,11 +88,11 @@ export default function QueryNode({ id }: NodeProps) {
               {title}
             </CardTitle>
           )}
-          {/* Actions */}
+
           <Button
             variant="ghost"
             size="icon"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
             aria-label="Delete"
             title="Delete"
             onClick={() => useStore.getState().removeNode(id)}
@@ -102,15 +101,21 @@ export default function QueryNode({ id }: NodeProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="nodrag">
+
+      <CardContent className="nodrag px-4 pb-4 pt-0">
         <div
-          style={{ width: 360, height: 100, resize: "both", overflow: "auto" }}
+          role="region"
+          aria-label="Query editor"
+          tabIndex={0}
+          className="w-[360px] h-[100px] resize both overflow-auto rounded-md border
+               focus:outline-none focus:ring-2 focus:ring-ring
+               focus:ring-offset-2 focus:ring-offset-background"
         >
           <Editor
             height="100%"
             width="100%"
             language={queryMode === "jsonata" ? "jsonata" : "plaintext"}
-            beforeMount={(monaco) => jsonataMode(monaco)}
+            beforeMount={jsonataMode}
             theme="jsonataTheme"
             value={
               queryMode === "jsonata"
@@ -122,7 +127,8 @@ export default function QueryNode({ id }: NodeProps) {
           />
         </div>
       </CardContent>
-      <CardFooter className="p-0 px-4 pb-4 pt-0 flex items-center justify-between gap-2">
+
+      <CardFooter className="flex items-center justify-between gap-2 px-4 pb-4 pt-0">
         <Select value={queryMode} onValueChange={setQueryMode}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Query type" />
@@ -132,21 +138,27 @@ export default function QueryNode({ id }: NodeProps) {
             <SelectItem value="natural-language">Natural Language</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" onClick={() => useStore.getState().runQueryNode(id)}>
+
+        <Button
+          size="sm"
+          onClick={() => useStore.getState().runQueryNode(id)}
+          className="px-3 py-1.5 text-sm font-medium"
+        >
           Run
         </Button>
       </CardFooter>
+
       <Handle
         type="target"
-        style={{ padding: 4 }}
         position={Position.Left}
         id="query-node-input"
+        style={{ padding: 4 }}
       />
       <Handle
         type="source"
-        style={{ padding: 4 }}
         position={Position.Right}
         id="query-node-output"
+        style={{ padding: 4 }}
       />
     </Card>
   );
