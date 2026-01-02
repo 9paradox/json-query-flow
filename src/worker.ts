@@ -1,34 +1,23 @@
+import { match } from "./routes/router";
+import { health } from "./routes/health";
+import { jsonata } from "./routes/jsonata";
 import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
+
+const routes = {
+  "GET:/api/health": health,
+  "POST:/api/run": jsonata,
+};
 
 export default {
   async fetch(request: Request, env: any, ctx: ExecutionContext) {
-    const url = new URL(request.url);
+    const handler = match(request, routes);
 
-    if (url.pathname === "/api/health") {
-      return new Response(
-        JSON.stringify({
-          status: "ok",
-          service: "json-query-flow",
-        }),
-        { headers: { "Content-Type": "application/json" } }
-      );
+    if (handler) {
+      return handler(request, env, ctx);
     }
 
-    if (url.pathname === "/api/run" && request.method === "POST") {
-      const body = await request.json();
-
-      return new Response(
-        JSON.stringify({
-          received: body,
-        }),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
     return getAssetFromKV(
-      {
-        request,
-        waitUntil: ctx.waitUntil.bind(ctx),
-      },
+      { request, waitUntil: ctx.waitUntil.bind(ctx) },
       {
         ASSET_NAMESPACE: env.__STATIC_CONTENT,
         ASSET_MANIFEST: env.__STATIC_CONTENT_MANIFEST,

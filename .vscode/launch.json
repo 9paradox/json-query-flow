@@ -2,7 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // 🟦 React / Vite UI debugging
       "name": "UI: Vite + React",
       "type": "chrome",
       "request": "launch",
@@ -12,11 +11,10 @@
     },
 
     {
-      // 🟧 Cloudflare Worker debugging
       "name": "Worker: Wrangler",
       "type": "node",
       "request": "attach",
-      "port": 8787,
+      "port": 9229,
       "restart": true,
       "timeout": 30000
     }
