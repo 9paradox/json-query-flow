@@ -28,7 +28,6 @@ export default function QueryNode({ id }: NodeProps) {
   const [editing, setEditing] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
-  const queryValue = node?.data || { jsonQuery: "", nlQuery: "" };
 
   useEffect(() => {
     if (editing) {
@@ -51,8 +50,8 @@ export default function QueryNode({ id }: NodeProps) {
 
   function onChange(val) {
     const queryData = {
-      jsonQuery: queryValue.jsonQuery,
-      nlQuery: queryValue.nlQuery,
+      jsonQuery: node?.data?.jsonQuery,
+      nlQuery: node?.data?.nlQuery,
     };
     if (queryMode === "jsonata") {
       queryData.jsonQuery = val;
@@ -69,7 +68,7 @@ export default function QueryNode({ id }: NodeProps) {
       toast.error("Please set your API key in the 'Connect with AI' button.");
       return;
     }
-    useStore.getState().runQueryNode(id);
+    useStore.getState().runQueryNode(id, queryMode);
   }
 
   return (
@@ -128,8 +127,8 @@ export default function QueryNode({ id }: NodeProps) {
             theme="jsonataTheme"
             value={
               queryMode === "jsonata"
-                ? queryValue.jsonQuery
-                : queryValue.nlQuery
+                ? node?.data?.jsonQuery
+                : node?.data?.nlQuery
             }
             onChange={onChange}
             options={{ minimap: { enabled: false } }}

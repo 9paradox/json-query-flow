@@ -11,6 +11,8 @@ import { nanoid } from "nanoid";
 import { create } from "zustand";
 import jsonata from "jsonata";
 import { jsonToSchemaLite, SchemaLite } from "@/lib/jsonToSchemaLite";
+import { generateJsonata } from "./lib/api";
+import { toast } from "sonner";
 
 const ALLOW_OUT: Record<string, string[]> = {
   mainDataNode: ["queryNode"],
@@ -65,7 +67,7 @@ interface StoreState {
   addEdge: (data: Connection & { position?: { x: number; y: number } }) => void;
   removeNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, patch: any) => void;
-  runQueryNode: (nodeId: string) => Promise<void>;
+  runQueryNode: (nodeId: string, queryMode: string) => Promise<void>;
   generateJsonSchemaForNode: (nodeId: string) => Promise<SchemaLite>;
   setApiKey: (key: string) => void;
 }
@@ -312,7 +314,7 @@ export const useStore = create<StoreState>((set, get) => {
       set({ nodes });
     },
 
-    async runQueryNode(nodeId) {
+    async runQueryNode(nodeId, queryMode) {
       this.updateNodeData(nodeId, { isLoading: true });
       let nodes = get().nodes;
       let edges = get().edges;
@@ -345,7 +347,7 @@ export const useStore = create<StoreState>((set, get) => {
         );
 
       const inputData = upstream?.data?.jsonData ?? {};
-      const queryStr = queryNode.data?.jsonQuery || "$";
+      let queryStr = queryNode.data?.jsonQuery || "$";
 
       let result: any;
       try {
@@ -354,10 +356,34 @@ export const useStore = create<StoreState>((set, get) => {
         if (schema === null && inputData) {
           try {
             schema = jsonToSchemaLite(inputData);
-            console.log("Computed schema for node", upstream?.id, schema);
           } catch {
             schema = null;
             console.log("Failed to compute schema");
+          }
+        }
+        if (
+          queryMode === "natural-language" &&
+          schema &&
+          queryNode.data?.nlQuery
+        ) {
+          const genRes = await generateJsonata({
+            schema,
+            query: queryNode.data?.nlQuery || "",
+            googleApiKey: get().apiKey,
+          });
+          if (genRes.ok) {
+            queryStr = genRes.data.jsonata;
+            nodes.find((n) => n.id === nodeId)!.data.nlQuery =
+              queryNode.data.nlQuery;
+            nodes.find((n) => n.id === nodeId)!.data.jsonQuery = queryStr;
+          } else {
+            toast.error(
+              `Error generating query with AI: ${
+                genRes.error || "Unknown error"
+              }`
+            );
+            this.updateNodeData(nodeId, { isLoading: false });
+            return;
           }
         }
         result = await jsonata(queryStr).evaluate(inputData);
@@ -373,16 +399,12 @@ export const useStore = create<StoreState>((set, get) => {
               data: {
                 ...(n.data || {}),
                 jsonData: result,
-                jsonSchema: n.data?.jsonSchema,
               },
-
-              //data: { ...(n.data || {}), value: result, label: "Result" },
             } as Node<FlowNode>)
           : n
       );
 
       set({ nodes: updatedNodes, edges });
-
       this.updateNodeData(nodeId, { isLoading: false });
     },
     async generateJsonSchemaForNode(nodeId: string): Promise<SchemaLite> {
