@@ -31,6 +31,7 @@ import {
 } from "@/lib/analyzeJsonForVisualization";
 import { BarChartView } from "@/components/BarChartView";
 import { PieChartView } from "@/components/PieChartView";
+import { toast } from "sonner";
 
 export default function JsonDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
@@ -103,6 +104,11 @@ export default function JsonDataNode({ id }: NodeProps) {
       node?.data?.jsonData ?? {}
     );
     console.log("Analysis result:", analysis);
+    if (!analysis.success) {
+      toast.error(
+        "Unable to visualize data. Make sure the data is in a valid format."
+      );
+    }
     setAnalyzerResult(analysis);
     setVisualModeEnabled(analysis.success);
   }
