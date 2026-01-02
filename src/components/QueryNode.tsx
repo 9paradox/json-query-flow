@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { TrashIcon } from "lucide-react";
+import { Loader2, TrashIcon } from "lucide-react";
 
 export default function QueryNode({ id }: NodeProps) {
   const [queryMode, setQueryMode] = useState<string>("jsonata");
@@ -142,9 +142,13 @@ export default function QueryNode({ id }: NodeProps) {
         <Button
           size="sm"
           onClick={() => useStore.getState().runQueryNode(id)}
-          className="px-3 py-1.5 text-sm font-medium"
+          className="px-3 py-1.5 text-sm font-medium flex items-center gap-2"
+          disabled={node?.data.isLoading}
         >
-          Run
+          {node?.data.isLoading && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+          <span>{node?.data.isLoading ? "Running" : "Run"}</span>
         </Button>
       </CardFooter>
 

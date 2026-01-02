@@ -22,17 +22,15 @@ export default function MainDataNode({ id }: NodeProps) {
     editorRef.current = editor;
 
     editor.onDidBlurEditorWidget(async () => {
-      console.log("blurred");
       setIsFocused(false);
-      const value = { jsonSchema: null };
+      let schema = null;
       try {
-        const inputValue = useStore.getState().nodes.find((n) => n.id === id)
-          ?.data?.jsonData;
-        value.jsonSchema = jsonToSchemaLite(inputValue ?? {});
+        schema = await useStore.getState().generateJsonSchemaForNode(id);
+        console.log("Generated schema:", schema);
       } catch {
-        value.jsonSchema = null;
+        schema = null;
       }
-      useStore.getState().updateNodeData(id, { ...value });
+      useStore.getState().updateNodeData(id, { schema });
     });
 
     editor.onDidFocusEditorWidget(async () => {

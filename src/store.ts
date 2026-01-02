@@ -10,7 +10,7 @@ import {
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 import jsonata from "jsonata";
-import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
+import { jsonToSchemaLite, SchemaLite } from "@/lib/jsonToSchemaLite";
 
 const ALLOW_OUT: Record<string, string[]> = {
   mainDataNode: ["queryNode"],
@@ -44,6 +44,7 @@ export interface FlowNode {
   jsonSchema: unknown | null;
   jsonQuery: string;
   nlQuery: string;
+  isLoading?: boolean;
 }
 
 interface StoreState {
@@ -64,6 +65,7 @@ interface StoreState {
   removeNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, patch: any) => void;
   runQueryNode: (nodeId: string) => Promise<void>;
+  generateJsonSchemaForNode: (nodeId: string) => Promise<SchemaLite>;
 }
 
 export const useStore = create<StoreState>((set, get) => {
@@ -122,6 +124,7 @@ export const useStore = create<StoreState>((set, get) => {
       jsonSchema: null,
       jsonQuery: "$",
       nlQuery: "",
+      isLoading: false,
     },
     position: pos,
   });
@@ -138,6 +141,7 @@ export const useStore = create<StoreState>((set, get) => {
       jsonSchema: null,
       jsonQuery: "$",
       nlQuery: "",
+      isLoading: false,
     },
     position: pos,
   });
@@ -307,6 +311,7 @@ export const useStore = create<StoreState>((set, get) => {
     },
 
     async runQueryNode(nodeId) {
+      this.updateNodeData(nodeId, { isLoading: true });
       let nodes = get().nodes;
       let edges = get().edges;
 
@@ -347,6 +352,7 @@ export const useStore = create<StoreState>((set, get) => {
         if (schema === null && inputData) {
           try {
             schema = jsonToSchemaLite(inputData);
+            console.log("Computed schema for node", upstream?.id, schema);
           } catch {
             schema = null;
             console.log("Failed to compute schema");
@@ -374,6 +380,18 @@ export const useStore = create<StoreState>((set, get) => {
       );
 
       set({ nodes: updatedNodes, edges });
+
+      this.updateNodeData(nodeId, { isLoading: false });
+    },
+    async generateJsonSchemaForNode(nodeId: string): Promise<SchemaLite> {
+      const node = findNode(nodeId);
+      if (!node) throw new Error("Node not found");
+
+      const jsonData = node.data?.jsonData || {};
+      const schema = jsonToSchemaLite(jsonData);
+
+      this.updateNodeData(nodeId, { jsonSchema: schema });
+      return schema;
     },
   };
 });

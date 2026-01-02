@@ -61,13 +61,11 @@ export default function JsonDataNode({ id }: NodeProps) {
     editorRef.current = editor;
 
     editor.onDidBlurEditorWidget(async () => {
-      console.log("blurred");
       setIsFocused(false);
       let schema = null;
       try {
-        const inputValue = useStore.getState().nodes.find((n) => n.id === id)
-          ?.data?.jsonData;
-        schema = jsonToSchemaLite(inputValue ?? {});
+        schema = await useStore.getState().generateJsonSchemaForNode(id);
+        console.log("Generated schema:", schema);
       } catch {
         schema = null;
       }
@@ -75,7 +73,6 @@ export default function JsonDataNode({ id }: NodeProps) {
     });
 
     editor.onDidFocusEditorWidget(async () => {
-      console.log("focused");
       setIsFocused(true);
     });
   }
