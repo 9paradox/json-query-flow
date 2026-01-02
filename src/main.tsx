@@ -13,6 +13,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <App />
       </ReactFlowProvider>
     </div>
-    <Toaster />
+    <Toaster position="top-center" />
   </React.StrictMode>
 );

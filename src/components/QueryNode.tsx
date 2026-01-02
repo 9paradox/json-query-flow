@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Loader2, TrashIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export default function QueryNode({ id }: NodeProps) {
   const [queryMode, setQueryMode] = useState<string>("jsonata");
@@ -61,6 +62,14 @@ export default function QueryNode({ id }: NodeProps) {
     return useStore.getState().updateNodeData(id, {
       ...queryData,
     });
+  }
+
+  function run() {
+    if (queryMode !== "jsonata" && !useStore.getState().apiKey) {
+      toast.error("Please set your API key in the 'Connect with AI' button.");
+      return;
+    }
+    useStore.getState().runQueryNode(id);
   }
 
   return (
@@ -141,7 +150,7 @@ export default function QueryNode({ id }: NodeProps) {
 
         <Button
           size="sm"
-          onClick={() => useStore.getState().runQueryNode(id)}
+          onClick={run}
           className="px-3 py-1.5 text-sm font-medium flex items-center gap-2"
           disabled={node?.data.isLoading}
         >

@@ -51,6 +51,7 @@ interface StoreState {
   nodes: Node<FlowNode>[];
   edges: Edge[];
   connectStart: { nodeId: string | null; handleId?: string | null } | null;
+  apiKey?: string;
 
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -66,6 +67,7 @@ interface StoreState {
   updateNodeData: (nodeId: string, patch: any) => void;
   runQueryNode: (nodeId: string) => Promise<void>;
   generateJsonSchemaForNode: (nodeId: string) => Promise<SchemaLite>;
+  setApiKey: (key: string) => void;
 }
 
 export const useStore = create<StoreState>((set, get) => {
@@ -392,6 +394,9 @@ export const useStore = create<StoreState>((set, get) => {
 
       this.updateNodeData(nodeId, { jsonSchema: schema });
       return schema;
+    },
+    setApiKey(key: string) {
+      set({ apiKey: key });
     },
   };
 });

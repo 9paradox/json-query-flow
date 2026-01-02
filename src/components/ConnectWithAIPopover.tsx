@@ -6,9 +6,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useStore } from "@/store";
 import { Sparkles } from "lucide-react";
 
 export function ConnectWithAIPopover() {
+  const apiKey = useStore((s) => s.apiKey ?? "");
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -30,7 +32,6 @@ export function ConnectWithAIPopover() {
             </h4>
             <p className="text-xs text-muted-foreground">
               Update your Gemini AI key to use AI features.
-              <span className="ml-1 italic">(Coming soon)</span>
             </p>
           </div>
 
@@ -42,11 +43,21 @@ export function ConnectWithAIPopover() {
               <Input
                 id="api-key"
                 type="password"
-                disabled
+                value={apiKey}
+                onChange={(e) => useStore.getState().setApiKey(e.target.value)}
                 className="col-span-2 h-8"
-                placeholder="••••••••••••"
+                placeholder="Enter your Gemini AI key"
               />
             </div>
+
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              Get your Gemini AI API key →
+            </a>
           </div>
         </div>
       </PopoverContent>
