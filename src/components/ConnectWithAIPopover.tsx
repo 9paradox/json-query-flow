@@ -17,10 +17,18 @@ export function ConnectWithAIPopover() {
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium"
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors ${
+            apiKey
+              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600"
+              : "hover:bg-accent hover:text-accent-foreground"
+          }`}
         >
-          <Sparkles className="h-4 w-4 text-muted-foreground" />
-          <span>Connect with AI</span>
+          <Sparkles
+            className={`h-4 w-4 ${
+              apiKey ? "text-white" : "text-muted-foreground"
+            }`}
+          />
+          <span>{apiKey ? "Connected to AI" : "Connect with AI"}</span>
         </Button>
       </PopoverTrigger>
 
