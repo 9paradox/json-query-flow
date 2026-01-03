@@ -1,5 +1,4 @@
 import ReactFlow, { Background, Controls, MiniMap, Panel } from "reactflow";
-import { Button } from "@/components/ui/button";
 import "./App.css";
 import "reactflow/dist/style.css";
 import MainDataNode from "@/components/MainDataNode";
@@ -7,9 +6,10 @@ import { shallow } from "zustand/shallow";
 import { useStore } from "./store";
 import QueryNode from "@/components/QueryNode";
 import JsonDataNode from "@/components/JsonDataNode";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { TypographyH4 } from "@/components/ui/h4";
 import { ConnectWithAIPopover } from "@/components/ConnectWithAIPopover";
+import { HelpPopover } from "@/components/HelpPopover";
+import GithubButton from "@/components/GithubButton";
 
 const nodeTypes = {
   mainDataNode: MainDataNode,
@@ -95,24 +95,10 @@ export default function App() {
       </Panel>
 
       <Panel position="top-right" className="flex items-center gap-2">
-        <ConnectWithAIPopover />
+        <HelpPopover />
+        <GithubButton />
 
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="GitHub repository"
-          asChild
-          className="h-8 w-8"
-        >
-          <a
-            href="https://github.com/9paradox/json-query-flow"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center"
-          >
-            <GitHubLogoIcon className="h-4 w-4" />
-          </a>
-        </Button>
+        <ConnectWithAIPopover />
       </Panel>
     </ReactFlow>
   );

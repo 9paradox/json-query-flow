@@ -10,7 +10,6 @@ export class HttpError extends Error {
 }
 
 export function handleError(err: unknown): Response {
-  // Known HTTP errors
   if (err instanceof HttpError) {
     return new Response(
       JSON.stringify({
@@ -23,8 +22,7 @@ export function handleError(err: unknown): Response {
     );
   }
 
-  // Unknown / unexpected errors
-  console.error("Unhandled worker error:", err);
+  console.error("Unhandled worker error");
 
   return new Response(
     JSON.stringify({

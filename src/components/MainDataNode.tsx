@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Editor } from "@monaco-editor/react";
 import { useStore } from "@/store";
 import { useRef, useState } from "react";
-import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 
 export default function MainDataNode({ id }: NodeProps) {
   const node = useStore((s) => s.nodes.find((n) => n.id === id));
@@ -34,7 +33,6 @@ export default function MainDataNode({ id }: NodeProps) {
     });
 
     editor.onDidFocusEditorWidget(async () => {
-      console.log("focused");
       setIsFocused(true);
     });
   }

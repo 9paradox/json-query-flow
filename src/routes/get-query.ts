@@ -37,7 +37,6 @@ export const getQuery: RouteHandler = async (request, env) => {
 
   const prompt = buildJsonataPrompt(schema, query);
 
-  // 🔑 Read user-provided key from request
   const googleApiKey = getGoogleAIKey(request);
 
   const jsonataExpr = await callAIViaGateway(prompt, {

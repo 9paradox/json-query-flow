@@ -11,7 +11,6 @@ import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { RefreshCcw, TrashIcon } from "lucide-react";
-import { jsonToSchemaLite } from "@/lib/jsonToSchemaLite";
 import {
   Select,
   SelectTrigger,

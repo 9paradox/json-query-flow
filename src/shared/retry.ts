@@ -18,7 +18,6 @@ export async function withRetry<T>(
 
       if (attempt === retries) break;
 
-      // simple exponential backoff
       await new Promise((res) => setTimeout(res, delayMs * (attempt + 1)));
     }
   }

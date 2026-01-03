@@ -37,7 +37,6 @@ export function aggregateChartData(
 
   const hasDuplicates = [...map.values()].some((v) => v.length > 1);
 
-  // AUTO logic
   if (aggregation === "auto") {
     aggregation = hasDuplicates ? "sum" : "sum";
   }
@@ -111,23 +110,19 @@ export interface AnalyzerResult {
   isBarChart: boolean;
   isPieChart: boolean;
 
-  /** true only if table or chart exists (json does NOT count) */
   success: boolean;
 
-  /** ALWAYS includes "json" */
   availableViews: ViewType[];
 
   warnings: string[];
 
   cleanedData: Record<string, any>[] | null;
 
-  /** For AI / export use */
   jsonata: {
     bar?: string;
     pie?: string;
   };
 
-  /** Ready-to-render chart data */
   chartData?: {
     bar?: ChartPoint[];
     pie?: ChartPoint[];
@@ -146,18 +141,13 @@ export async function analyzeJsonForVisualization(
     isBarChart: false,
     isPieChart: false,
     success: false,
-    availableViews: ["json"], // ✅ ALWAYS PRESENT
+    availableViews: ["json"],
     warnings: [],
     cleanedData: null,
     jsonata: {},
     chartData: {},
   };
 
-  /* ============================================================
-     GUARDS (ORDER MATTERS)
-  ============================================================ */
-
-  // 1️⃣ Array of primitives → schema or primitive list
   if (
     Array.isArray(input) &&
     input.length > 0 &&
@@ -171,7 +161,6 @@ export async function analyzeJsonForVisualization(
     };
   }
 
-  // 2️⃣ Single object (not array)
   if (typeof input === "object" && input !== null && !Array.isArray(input)) {
     return {
       ...baseResult,
@@ -179,33 +168,24 @@ export async function analyzeJsonForVisualization(
     };
   }
 
-  // 3️⃣ Must be non-empty array
   if (!Array.isArray(input) || input.length === 0) {
     return baseResult;
   }
 
-  // 4️⃣ Must be array of objects
   if (input.some((v) => typeof v !== "object" || v === null)) {
     return baseResult;
   }
 
-  /* ============================================================
-     RECORD ANALYSIS
-  ============================================================ */
-
   const records = input as Record<string, any>[];
 
-  // Collect all keys
   const keySet = new Set<string>();
   records.forEach((r) => Object.keys(r).forEach((k) => keySet.add(k)));
   const allKeys = [...keySet];
 
-  // Detect missing keys
   const hasMissing = records.some((r) => allKeys.some((k) => !(k in r)));
 
   const dataClass: DataClass = hasMissing ? "records-with-missing" : "records";
 
-  // Cleaned data (lenient mode only)
   const cleanedData =
     mode === "lenient"
       ? records.map((r) => {
@@ -217,15 +197,7 @@ export async function analyzeJsonForVisualization(
         })
       : null;
 
-  /* ============================================================
-     TABLE
-  ============================================================ */
-
   const isTable = dataClass === "records" || mode === "lenient";
-
-  /* ============================================================
-     TYPE DETECTION
-  ============================================================ */
 
   const stringKeys: string[] = [];
   const numberKeys: string[] = [];
@@ -243,10 +215,6 @@ export async function analyzeJsonForVisualization(
       numberKeys.push(key);
     }
   });
-
-  /* ============================================================
-     BAR CHART
-  ============================================================ */
 
   let isBarChart = false;
   let barData: ChartPoint[] | undefined;
@@ -269,10 +237,6 @@ export async function analyzeJsonForVisualization(
     }
   }
 
-  /* ============================================================
-     PIE CHART
-  ============================================================ */
-
   let isPieChart = false;
   let pieData: ChartPoint[] | undefined;
 
@@ -287,10 +251,6 @@ export async function analyzeJsonForVisualization(
     }
   }
 
-  /* ============================================================
-     JSONATA (FOR AI / EXPORT)
-  ============================================================ */
-
   if (stringKeys.length === 1 && numberKeys.length === 1) {
     const label = stringKeys[0];
     const value = numberKeys[0];
@@ -301,10 +261,6 @@ export async function analyzeJsonForVisualization(
     baseResult.jsonata.pie = expr;
   }
 
-  /* ============================================================
-     AVAILABLE VIEWS + SUCCESS
-  ============================================================ */
-
   const availableViews: ViewType[] = ["json"];
 
   if (isTable) availableViews.push("table");
@@ -312,10 +268,6 @@ export async function analyzeJsonForVisualization(
   if (isPieChart) availableViews.push("pie");
 
   const success = isTable || isBarChart || isPieChart;
-
-  /* ============================================================
-     FINAL RESULT
-  ============================================================ */
 
   return {
     ...baseResult,

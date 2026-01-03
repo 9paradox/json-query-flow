@@ -58,13 +58,20 @@ export function ConnectWithAIPopover() {
               />
             </div>
 
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Your API key is sent securely to the Cloudflare Worker and used
+              only to process your own AI requests. The key is not stored or
+              logged by this application and is forwarded only to the selected
+              AI provider to fulfill your request.
+            </p>
+
             <a
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noreferrer"
               className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
             >
-              Get your Gemini AI API key →
+              Get your free Gemini AI API key →
             </a>
           </div>
         </div>

@@ -65,10 +65,6 @@ export default function JsonTable({ data, maxRows = 100 }: JsonTableProps) {
   );
 }
 
-/* ============================
-   Cell Formatter
-============================ */
-
 function formatCell(value: any) {
   if (value === null || value === undefined) {
     return <span className="text-muted-foreground">—</span>;
