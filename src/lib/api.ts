@@ -1,3 +1,10 @@
+export type ApiResponse<T> = {
+  ok: boolean;
+  data?: T;
+  error?: string;
+  status: number;
+};
+
 export interface GenerateJsonataRequest {
   schema: unknown;
   query: string;
@@ -6,26 +13,12 @@ export interface GenerateJsonataRequest {
 
 export interface GenerateJsonataResponse {
   jsonata: string;
+  modelUsed: string;
+  fallbackUsed: boolean;
+  retries: number;
+  message: string;
 }
 
-export type ApiResponse<T> = {
-  ok: boolean;
-  data?: T;
-  error?: string;
-  status: number;
-};
-
-function extractErrorMessage(body: unknown): string | null {
-  if (
-    typeof body === "object" &&
-    body !== null &&
-    "error" in body &&
-    typeof (body as any).error === "string"
-  ) {
-    return (body as any).error;
-  }
-  return null;
-}
 export async function generateJsonata(
   input: GenerateJsonataRequest
 ): Promise<ApiResponse<GenerateJsonataResponse>> {
@@ -55,7 +48,7 @@ export async function generateJsonata(
       headers,
       body: JSON.stringify({ schema, query }),
     });
-  } catch (e) {
+  } catch {
     return {
       ok: false,
       error: "Network error",
@@ -63,42 +56,58 @@ export async function generateJsonata(
     };
   }
 
-  if (!res.ok) {
-    let message = "Request failed";
+  let body: unknown;
 
-    try {
-      const body = await res.json();
-      const extracted = extractErrorMessage(body);
-      if (extracted) message = extracted;
-    } catch {
-      // ignore JSON parse errors
-    }
-
+  try {
+    body = await res.json();
+  } catch {
     return {
       ok: false,
-      error: message,
+      error: "Invalid server response",
       status: res.status,
     };
   }
 
-  const data = (await res.json()) as unknown;
+  if (!res.ok) {
+    if (
+      typeof body === "object" &&
+      body !== null &&
+      "error" in body &&
+      typeof (body as any).error === "string"
+    ) {
+      return {
+        ok: false,
+        error: (body as any).error,
+        status: res.status,
+      };
+    }
+
+    return {
+      ok: false,
+      error: "Request failed",
+      status: res.status,
+    };
+  }
 
   if (
-    typeof data !== "object" ||
-    data === null ||
-    !("jsonata" in data) ||
-    typeof (data as any).jsonata !== "string"
+    typeof body !== "object" ||
+    body === null ||
+    typeof (body as any).jsonata !== "string" ||
+    typeof (body as any).modelUsed !== "string" ||
+    typeof (body as any).fallbackUsed !== "boolean" ||
+    typeof (body as any).retries !== "number" ||
+    typeof (body as any).message !== "string"
   ) {
     return {
       ok: false,
-      error: "Invalid API response",
+      error: "Malformed API response",
       status: 500,
     };
   }
 
   return {
     ok: true,
-    data: { jsonata: (data as any).jsonata },
-    status: 200,
+    data: body as GenerateJsonataResponse,
+    status: res.status,
   };
 }

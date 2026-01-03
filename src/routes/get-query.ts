@@ -38,13 +38,28 @@ export const getQuery: RouteHandler = async (request, env) => {
   const prompt = buildJsonataPrompt(schema, query);
 
   const googleApiKey = getGoogleAIKey(request);
+  const { jsonata, modelUsed, fallbackUsed, retries } = await callAIViaGateway(
+    prompt,
+    {
+      env,
+      googleApiKey,
+    }
+  );
 
-  const jsonataExpr = await callAIViaGateway(prompt, {
-    env,
-    googleApiKey,
-  });
+  const message = fallbackUsed
+    ? `Query generated using fallback model (${modelUsed}) after ${retries} retry attempt(s). Confidence is lower; please review carefully as AI-generated queries may contain errors.`
+    : `Query generated using ${modelUsed}. Please review the output; AI-generated queries may contain errors.`;
 
-  return new Response(JSON.stringify({ jsonata: jsonataExpr }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      jsonata,
+      modelUsed,
+      fallbackUsed,
+      retries,
+      message,
+    }),
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 };

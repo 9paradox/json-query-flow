@@ -376,6 +376,8 @@ export const useStore = create<StoreState>((set, get) => {
             nodes.find((n) => n.id === nodeId)!.data.nlQuery =
               queryNode.data.nlQuery;
             nodes.find((n) => n.id === nodeId)!.data.jsonQuery = queryStr;
+
+            toast.success(genRes.data.message, { duration: 8000 });
           } else {
             toast.error(
               `Error generating query with AI: ${
