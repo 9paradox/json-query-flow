@@ -199,6 +199,12 @@ export async function analyzeJsonForVisualization(
 
   const isTable = dataClass === "records" || mode === "lenient";
 
+  if (!isTable && dataClass === "records-with-missing") {
+    baseResult.warnings.push(
+      "Inconsistent object keys. Table view requires uniform columns."
+    );
+  }
+
   const stringKeys: string[] = [];
   const numberKeys: string[] = [];
 
@@ -215,6 +221,12 @@ export async function analyzeJsonForVisualization(
       numberKeys.push(key);
     }
   });
+
+  if (stringKeys.length > 0 && numberKeys.length === 0) {
+    baseResult.warnings.push(
+      "No numeric fields found. Charts require at least one numeric field."
+    );
+  }
 
   let isBarChart = false;
   let barData: ChartPoint[] | undefined;
@@ -233,7 +245,7 @@ export async function analyzeJsonForVisualization(
         value: r[valueKey],
       }));
     } else {
-      baseResult.warnings.push("Missing numeric values prevent bar chart");
+      baseResult.warnings.push("Missing numeric values prevent bar chart.");
     }
   }
 
@@ -243,11 +255,17 @@ export async function analyzeJsonForVisualization(
   if (isBarChart && barData) {
     const sum = barData.reduce((a, b) => a + b.value, 0);
 
-    if (barData.every((d) => d.value >= 0) && sum > 0) {
-      isPieChart = true;
-      pieData = barData;
+    if (barData.every((d) => d.value >= 0)) {
+      if (sum > 0) {
+        isPieChart = true;
+        pieData = barData;
+      } else {
+        baseResult.warnings.push(
+          "Pie chart requires total value greater than zero."
+        );
+      }
     } else {
-      baseResult.warnings.push("Pie chart requires positive numeric values");
+      baseResult.warnings.push("Pie chart requires positive numeric values.");
     }
   }
 
@@ -262,7 +280,6 @@ export async function analyzeJsonForVisualization(
   }
 
   const availableViews: ViewType[] = ["json"];
-
   if (isTable) availableViews.push("table");
   if (isBarChart) availableViews.push("bar");
   if (isPieChart) availableViews.push("pie");

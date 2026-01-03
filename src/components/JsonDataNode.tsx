@@ -10,7 +10,7 @@ import { Editor } from "@monaco-editor/react";
 import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { RefreshCcw, TrashIcon } from "lucide-react";
+import { MessageCircleWarning, RefreshCcw, TrashIcon } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -107,6 +107,9 @@ export default function JsonDataNode({ id }: NodeProps) {
       toast.error(
         "Unable to visualize data. Make sure the data is in a valid format."
       );
+    }
+    if (visualMode !== "json" && !analysis.success) {
+      setVisualMode("json");
     }
     setAnalyzerResult(analysis);
     setVisualModeEnabled(analysis.success);
@@ -235,17 +238,34 @@ export default function JsonDataNode({ id }: NodeProps) {
             )}
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleVisualModeChange}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium"
-        >
-          {visualModeEnabled && (
-            <RefreshCcw className="h-4 w-4 text-muted-foreground" />
-          )}
-          <span>Visualize</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {analyzerResult?.warnings.length ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium border-yellow-600 text-yellow-600 hover:bg-yellow-50 hover:border-yellow-700 hover:text-yellow-700"
+              onClick={() => {
+                toast.warning(analyzerResult.warnings.join("\n- "), {
+                  duration: 4000 * analyzerResult.warnings.length,
+                });
+              }}
+            >
+              <MessageCircleWarning className="h-4 w-4" />
+              <span>{analyzerResult.warnings.length} Warnings</span>
+            </Button>
+          ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleVisualModeChange}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium"
+          >
+            {visualModeEnabled && (
+              <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+            )}
+            <span>Visualize</span>
+          </Button>
+        </div>
       </CardFooter>
 
       <Handle
