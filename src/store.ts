@@ -54,6 +54,7 @@ interface StoreState {
   edges: Edge[];
   connectStart: { nodeId: string | null; handleId?: string | null } | null;
   apiKey?: string;
+  enableWorkersAI?: boolean;
 
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -70,6 +71,7 @@ interface StoreState {
   runQueryNode: (nodeId: string, queryMode: string) => Promise<void>;
   generateJsonSchemaForNode: (nodeId: string) => Promise<SchemaLite>;
   setApiKey: (key: string) => void;
+  setWorkersAIUsage: (use: boolean) => void;
 }
 
 export const useStore = create<StoreState>((set, get) => {
@@ -370,6 +372,7 @@ export const useStore = create<StoreState>((set, get) => {
             schema,
             query: queryNode.data?.nlQuery || "",
             googleApiKey: get().apiKey,
+            useWorkerAI: get().enableWorkersAI,
           });
           if (genRes.ok) {
             queryStr = genRes.data.jsonata;
@@ -421,6 +424,9 @@ export const useStore = create<StoreState>((set, get) => {
     },
     setApiKey(key: string) {
       set({ apiKey: key });
+    },
+    setWorkersAIUsage(use: boolean) {
+      set({ enableWorkersAI: use });
     },
   };
 });

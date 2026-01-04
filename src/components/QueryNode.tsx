@@ -64,10 +64,15 @@ export default function QueryNode({ id }: NodeProps) {
   }
 
   function run() {
-    if (queryMode !== "jsonata" && !useStore.getState().apiKey) {
-      toast.error("Please set your API key in the 'Connect with AI' button.");
+    const { apiKey, enableWorkersAI } = useStore.getState();
+
+    if (queryMode !== "jsonata" && !enableWorkersAI && !apiKey) {
+      toast.error(
+        "Please enable Workers AI or set your Gemini API key from 'Connect with AI'."
+      );
       return;
     }
+
     useStore.getState().runQueryNode(id, queryMode);
   }
 

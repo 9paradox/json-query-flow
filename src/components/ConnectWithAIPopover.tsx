@@ -6,73 +6,111 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { useStore } from "@/store";
 import { Sparkles } from "lucide-react";
 
 export function ConnectWithAIPopover() {
   const apiKey = useStore((s) => s.apiKey ?? "");
+  const enableWorkersAI = useStore((s) => s.enableWorkersAI ?? false);
+
+  const setApiKey = useStore((s) => s.setApiKey);
+  const setEnableWorkersAI = useStore((s) => s.setWorkersAIUsage);
+
+  const isConnected = enableWorkersAI || Boolean(apiKey);
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           size="sm"
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors ${
-            apiKey
-              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600"
-              : "hover:bg-accent hover:text-accent-foreground"
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium ${
+            isConnected
+              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-600"
+              : "hover:bg-accent"
           }`}
         >
-          <Sparkles
-            className={`h-4 w-4 ${
-              apiKey ? "text-white" : "text-muted-foreground"
-            }`}
-          />
-          <span>{apiKey ? "Connected to AI" : "Connect with AI"}</span>
+          <Sparkles className="h-4 w-4" />
+          <span>
+            {enableWorkersAI
+              ? "Using Workers AI"
+              : apiKey
+              ? "Connected to Gemini"
+              : "Connect with AI"}
+          </span>
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-80 p-4">
+      <PopoverContent className="w-96 p-4">
         <div className="grid gap-4">
           <div className="space-y-1">
-            <h4 className="text-sm font-medium leading-none">
-              Connect with AI
-            </h4>
+            <h4 className="text-sm font-medium leading-none">AI Provider</h4>
             <p className="text-xs text-muted-foreground">
-              Update your Gemini AI key to use AI features.
+              Choose how AI queries are generated.
             </p>
           </div>
 
           <div className="grid gap-2">
             <div className="grid grid-cols-3 items-center gap-3">
               <Label htmlFor="api-key" className="text-sm">
-                Key
+                Gemini Key
               </Label>
               <Input
                 id="api-key"
                 type="password"
                 value={apiKey}
-                onChange={(e) => useStore.getState().setApiKey(e.target.value)}
+                disabled={enableWorkersAI}
+                onChange={(e) => setApiKey(e.target.value)}
                 className="col-span-2 h-8"
-                placeholder="Enter your Gemini AI key"
+                placeholder="Enter Gemini API key"
               />
             </div>
 
             <p className="text-[11px] text-muted-foreground leading-snug">
               Your API key is sent securely to the Cloudflare Worker and used
-              only to process your own AI requests. The key is not stored or
-              logged by this application and is forwarded only to the selected
-              AI provider to fulfill your request.
+              only to process your requests. The key is not stored or logged.
             </p>
 
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
-            >
-              Get your free Gemini AI API key →
-            </a>
+            {!enableWorkersAI && (
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                Get a free Gemini API key →
+              </a>
+            )}
+          </div>
+
+          <div className="relative my-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-[11px] uppercase">
+              <span className="bg-popover px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div className="space-y-0.5">
+              <Label className="text-sm">Use Cloudflare Workers AI</Label>
+              <p className="text-[11px] text-muted-foreground">
+                No API key required. Requests are handled directly by Cloudflare
+                Workers AI. May have daily usage limits. For more complex
+                queries, using Gemini can produce more reliable results.
+              </p>
+            </div>
+            <Switch
+              checked={enableWorkersAI}
+              onCheckedChange={(checked) => {
+                setEnableWorkersAI(checked);
+                if (checked) {
+                  setApiKey("");
+                }
+              }}
+            />
           </div>
         </div>
       </PopoverContent>

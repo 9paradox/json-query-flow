@@ -9,6 +9,7 @@ export interface GenerateJsonataRequest {
   schema: unknown;
   query: string;
   googleApiKey?: string;
+  useWorkerAI?: boolean;
 }
 
 export interface GenerateJsonataResponse {
@@ -22,7 +23,7 @@ export interface GenerateJsonataResponse {
 export async function generateJsonata(
   input: GenerateJsonataRequest
 ): Promise<ApiResponse<GenerateJsonataResponse>> {
-  const { schema, query, googleApiKey } = input;
+  const { schema, query, googleApiKey, useWorkerAI } = input;
 
   if (!schema || !query) {
     return {
@@ -46,7 +47,7 @@ export async function generateJsonata(
     res = await fetch("/api/query", {
       method: "POST",
       headers,
-      body: JSON.stringify({ schema, query }),
+      body: JSON.stringify({ schema, query, useWorkerAI }),
     });
   } catch {
     return {
